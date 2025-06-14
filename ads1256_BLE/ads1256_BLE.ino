@@ -1,6 +1,11 @@
-#include <ADS1256x.h>
+/*
+  Bibliotecas
+    - Nimble by h2zero
+    - BleGamepad by lemmingDev
+    - ADS1256 by curiousscientist
+*/
+#include <ADS1256.h>
 #include <BleGamepad.h>
-#include <wifi.h>
 
 /*
   Load Cell - Extension
@@ -16,7 +21,7 @@ long  mapidimap(long long x, long long in_min, long long in_max, long long out_m
 }
 
 ADS1256 A(16, 25, 0, 5, 2.5); //DRDY, RESET, SYNC(PDWN), CS, VREF(float).   //ESP32 WROOM 32
-BleGamepad bleGamepad ("Tech Talkies Gamepad", "Tech Talkies", 100);
+BleGamepad bleGamepad ("Pedals BLE Gamepad", "GFY", 100);
 
 void setup() {
   Serial.begin(115200); //The value does not matter if you use an MCU with native USB
@@ -38,6 +43,7 @@ void setup() {
 void loop() {
   long VrxValue = 0;
   long VryValue = 0;
+  long VlxValue = 0;
   long test = 0;
   double dChannels[4];
 
@@ -55,10 +61,13 @@ void loop() {
 	    	Serial.print("\t");
 	  	}
     }
-    VrxValue = mapidimap(dChannels[1], 125000, 650000, 0, 32737);
-    VryValue = mapidimap(dChannels[2], -12000, 1100000, 0, 32737);
+    VlxValue = mapidimap(dChannels[0], 125000, 650000, 0, 32737);   //Acelerador
+    VrxValue = mapidimap(dChannels[1], 5000, 220000, 0, 32737);     //Freio
+    VryValue = mapidimap(dChannels[2], -12000, 1600000, 0, 32737);  //Embreagem
+    
 
-    bleGamepad.setLeftThumb(VrxValue, VryValue);
+    bleGamepad.setLeftThumb(VlxValue, 0);
+    bleGamepad.setRightThumb(VrxValue, VryValue);
     Serial.println();
   }
 }
